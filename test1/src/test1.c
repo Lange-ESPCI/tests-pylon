@@ -18,6 +18,7 @@ int main(void) {
 	unsigned char* imgBuf; // Buffer d'acquisition de l'image
 	const int numGrabs = 10; // Nombre d'image à récupérer
 	clock_t c; // Début du timer
+	FILE *fp; // Fichier d'image
 	
 	// Initialisation du runtime Pylon
 	PylonInitialize();
@@ -139,9 +140,9 @@ int main(void) {
 				i + 1, min, max);
 			
 			char path[11];
-			sprintf(path, "data/%d.png", i + 1);
+			sprintf(path, "data/%d.bmp", i + 1);
 			c = clock();
-			saveImgToPng(imgBuf, path, grabResult.SizeX, grabResult.SizeY);
+			saveImgToBmp(imgBuf, path, grabResult.SizeX, grabResult.SizeY, 1);
 			c = clock() - c;
 			double time_taken = ((double) c)/CLOCKS_PER_SEC;
 			printf("Temps écoulé : %fs\n", time_taken);

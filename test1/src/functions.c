@@ -1,5 +1,10 @@
 #include "functions.h"
 
+#define BMP_HEADER_SIZE 14
+#define BMP_INFO_HEADER_SIZE 40
+#define BMP_NO_COMPRESSION 0
+#define BMP_MAX_NUMBER_OF_COLORS 0
+#define BMP_ALL_COLOR_REQUIRED 0
 
 
 /* This function demonstrates how to retrieve the error message for the last failed
@@ -125,4 +130,54 @@ int saveImgToPng(unsigned char *data, const char * path, int width, int height){
     fopen_failed:
         return status;
 
+}
+
+int saveImgToBmp(unsigned char *data, const char *path, int width, int height,
+                 int bytesPerPixel) {
+    FILE *fp = fopen(path, "wb");
+
+    // Écriture du header
+    const char *BM = "BM";
+    fwrite(&BM[0], 1, 1, fp);
+    fwrite(&BM[1], 1, 1, fp);
+
+    int paddedRowSize = (int) (4 * ceil((float) width / 4.0f)) * bytesPerPixel;
+    uint32_t fileSize = paddedRowSize * height + BMP_HEADER_SIZE + BMP_INFO_HEADER_SIZE;
+    fwrite(&fileSize, 4, 1, fp);
+    uint32_t reserved = 0x0000;
+    fwrite(&reserved, 4, 1, fp);
+    uint32_t dataOffset = BMP_HEADER_SIZE + BMP_INFO_HEADER_SIZE;
+    fwrite(&dataOffset, 4, 1, fp);
+
+    // Écriture du header avec les informations de l'image
+    uint32_t infoHeaderSize= BMP_INFO_HEADER_SIZE;
+    fwrite(&infoHeaderSize, 4, 1, fp);
+    fwrite(&width, 4, 1, fp);
+    fwrite(&height, 4 ,1, fp);
+    uint16_t planes = 1;
+    fwrite(&planes, 2, 1, fp);
+    uint16_t bitsPerPixel =  bytesPerPixel * 8;
+    fwrite(&bitsPerPixel, 2, 1, fp);
+    uint32_t compression = BMP_NO_COMPRESSION;
+    fwrite(&compression, 4, 1, fp);
+    uint32_t imageSize = width * height * bytesPerPixel;
+    fwrite(&imageSize, 4, 1, fp);
+    uint32_t resolution = 11811;
+    fwrite(&resolution, 4, 1, fp);
+    fwrite(&resolution, 4, 1, fp);
+    uint32_t colorsUsed = BMP_MAX_NUMBER_OF_COLORS;
+    fwrite(&colorsUsed, 4, 1, fp);
+    uint32_t importantColors = BMP_ALL_COLOR_REQUIRED;
+    fwrite(&importantColors, 4, 1, fp);
+
+    // Écriture des pixels
+    int i = 0;
+    int unpaddedRowSize = width * bytesPerPixel;
+    for(i = 0; i < height; i++) {
+        int pixelOffset = ((height - i) - 1) * unpaddedRowSize;
+        fwrite(&data[pixelOffset], 1, paddedRowSize, fp);
+    }
+
+    fclose(fp);
+    return 0;
 }

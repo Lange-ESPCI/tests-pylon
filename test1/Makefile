@@ -5,7 +5,7 @@ PYLON_ROOT ?= /opt/pylon32
 CC = gcc
 CPPFLAGS   := $(shell $(PYLON_ROOT)/bin/pylon-config --cflags pylonc)
 CFLAGS := -W -Wall -std=c17 -pedantic -g -c -O0 #debug
-LDFLAGS := $(shell $(PYLON_ROOT)/bin/pylon-config --libs-rpath pylonc) -lpng
+LDFLAGS := $(shell $(PYLON_ROOT)/bin/pylon-config --libs-rpath pylonc) -lpng -lm
 LDLIBS     := $(shell $(PYLON_ROOT)/bin/pylon-config --libs pylonc)
 EXEC := test1
 BUILD_DIR ?= build
