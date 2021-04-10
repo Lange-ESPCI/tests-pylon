@@ -1,3 +1,7 @@
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <time.h>
+
 #include "functions.h"
 
 /* Simple error handling. */
@@ -13,6 +17,7 @@ int main(void) {
 	int i; // Compteur
 	unsigned char* imgBuf; // Buffer d'acquisition de l'image
 	const int numGrabs = 10; // Nombre d'image à récupérer
+	clock_t c; // Début du timer
 	
 	// Initialisation du runtime Pylon
 	PylonInitialize();
@@ -105,6 +110,9 @@ int main(void) {
 		pressEnterToExit();
 		exit(EXIT_FAILURE);
 	}
+
+	// Création du dossier
+	mkdir("data", 0777);
 	
 	// Acquisition d'images dans une boucle
 	for(i = 0; i < numGrabs;++i) {
@@ -129,6 +137,14 @@ int main(void) {
 			getMinMax(imgBuf, grabResult.SizeX, grabResult.SizeY, &min, &max);
 			printf("Acquisition de l'image #%2d. Valeur grise min = %3u, max = %3u\n",
 				i + 1, min, max);
+			
+			char path[11];
+			sprintf(path, "data/%d.png", i + 1);
+			c = clock();
+			saveImgToPng(imgBuf, path, grabResult.SizeX, grabResult.SizeY);
+			c = clock() - c;
+			double time_taken = ((double) c)/CLOCKS_PER_SEC;
+			printf("Temps écoulé : %fs\n", time_taken);
 		} else if(grabResult.Status == Failed){
 			fprintf(stderr, "L'image %d n'as pas pu être acquise avec succès. Code d'erreur : 0x%08X/\n",
 				i + 1, grabResult.ErrorCode);

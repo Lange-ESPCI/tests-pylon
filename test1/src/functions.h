@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <png.h>
 
 #include <pylonc/PylonC.h>
 
@@ -12,3 +13,5 @@ void printErrorAndExit( GENAPIC_RESULT errc );
 
 void getMinMax( const unsigned char* pImg, int32_t width, int32_t height,
                 unsigned char* pMin, unsigned char* pMax );
+
+int saveImgToPng(unsigned char *data, const char * path, int width, int height);
