@@ -5,6 +5,9 @@
 #define BMP_NO_COMPRESSION 0
 #define BMP_MAX_NUMBER_OF_COLORS 0
 #define BMP_ALL_COLOR_REQUIRED 0
+#define BMP_GRAYSCALE_PALETTE_SIZE 1024
+#define BMP_GRAYSCALE_HEADER_OFFSET 64
+#define BMP_COLOR_SCHEME 4
 
 
 /* This function demonstrates how to retrieve the error message for the last failed
@@ -107,6 +110,9 @@ int saveImgToPng(unsigned char *data, const char * path, int width, int height){
                   PNG_COMPRESSION_TYPE_DEFAULT,
                   PNG_FILTER_TYPE_DEFAULT);
 
+    png_set_compression_level(png_ptr, 0);
+    png_set_filter(png_ptr, 0, PNG_FILTER_NONE);
+
     png_init_io(png_ptr, fp);
 
     png_write_info(png_ptr, info_ptr);
@@ -132,6 +138,7 @@ int saveImgToPng(unsigned char *data, const char * path, int width, int height){
 
 }
 
+// Ne fonctionne que pour les images en nuance de gris
 int saveImgToBmp(unsigned char *data, const char *path, int width, int height,
                  int bytesPerPixel) {
     FILE *fp = fopen(path, "wb");
@@ -142,11 +149,15 @@ int saveImgToBmp(unsigned char *data, const char *path, int width, int height,
     fwrite(&BM[1], 1, 1, fp);
 
     int paddedRowSize = (int) (4 * ceil((float) width / 4.0f)) * bytesPerPixel;
-    uint32_t fileSize = paddedRowSize * height + BMP_HEADER_SIZE + BMP_INFO_HEADER_SIZE;
+    uint32_t fileSize = paddedRowSize * height + BMP_HEADER_SIZE + 
+        BMP_INFO_HEADER_SIZE + BMP_COLOR_SCHEME + BMP_GRAYSCALE_HEADER_OFFSET +
+        BMP_GRAYSCALE_PALETTE_SIZE;
     fwrite(&fileSize, 4, 1, fp);
     uint32_t reserved = 0x0000;
     fwrite(&reserved, 4, 1, fp);
-    uint32_t dataOffset = BMP_HEADER_SIZE + BMP_INFO_HEADER_SIZE;
+    uint32_t dataOffset = BMP_HEADER_SIZE + BMP_INFO_HEADER_SIZE +
+        BMP_COLOR_SCHEME + BMP_GRAYSCALE_HEADER_OFFSET +
+        BMP_GRAYSCALE_PALETTE_SIZE;;
     fwrite(&dataOffset, 4, 1, fp);
 
     // Écriture du header avec les informations de l'image
@@ -170,9 +181,27 @@ int saveImgToBmp(unsigned char *data, const char *path, int width, int height,
     uint32_t importantColors = BMP_ALL_COLOR_REQUIRED;
     fwrite(&importantColors, 4, 1, fp);
 
+    // Écriture de la palette des couleurs
+    const char *bgrs = "BGRs";
+    fwrite(&bgrs[0], 1, 1, fp);
+    fwrite(&bgrs[1], 1, 1, fp);
+    fwrite(&bgrs[2], 1, 1, fp);
+    fwrite(&bgrs[3], 1, 1, fp);
+    unsigned int j = 0;
+    char zero = 0;
+    for(j = 0; j < 64; j++) {
+        fwrite(&zero, 1, 1, fp);
+    }
+    for(j = 0; j < 256;j++){
+        fwrite(&j, 1, 1, fp);
+        fwrite(&j, 1, 1, fp);
+        fwrite(&j, 1, 1, fp);
+        fwrite(&zero, 1, 1, fp);
+    }
+
     // Écriture des pixels
-    int i = 0;
     int unpaddedRowSize = width * bytesPerPixel;
+    int i = 0;
     for(i = 0; i < height; i++) {
         int pixelOffset = ((height - i) - 1) * unpaddedRowSize;
         fwrite(&data[pixelOffset], 1, paddedRowSize, fp);

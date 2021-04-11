@@ -138,7 +138,6 @@ int main(void) {
 			getMinMax(imgBuf, grabResult.SizeX, grabResult.SizeY, &min, &max);
 			printf("Acquisition de l'image #%2d. Valeur grise min = %3u, max = %3u\n",
 				i + 1, min, max);
-			
 			char path[11];
 			sprintf(path, "data/%d.bmp", i + 1);
 			c = clock();
