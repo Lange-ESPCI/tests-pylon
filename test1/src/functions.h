@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <png.h>
 #include <math.h>
+#include <pthread.h>
 
 #include <pylonc/PylonC.h>
 
@@ -19,3 +20,5 @@ int saveImgToPng(unsigned char *data, const char * path, int width, int height);
 
 int saveImgToBmp(unsigned char *data, const char *path, int width, int height,
                  int bytesPerPixel);
+
+void *closeFile(void *fp);

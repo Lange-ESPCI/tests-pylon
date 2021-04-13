@@ -207,6 +207,13 @@ int saveImgToBmp(unsigned char *data, const char *path, int width, int height,
         fwrite(&data[pixelOffset], 1, paddedRowSize, fp);
     }
 
-    fclose(fp);
+    pthread_t thread;
+    int rc;
+    rc = pthread_create(&thread, NULL, closeFile, (void*) fp);
     return 0;
+}
+
+void *closeFile(void *fp) {
+    fclose((FILE *) fp);
+    pthread_exit(NULL);
 }
