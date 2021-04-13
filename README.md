@@ -6,6 +6,10 @@
 
 Capture d'image de façon simple. Ne permet pas de monter au max des fps.
 
+### TestStreamColor
+
+Capture d'image en couleur en utilisant un stream.
+
 ## Architecture utilisées pour les tests
 
 - Carte : `Raspberry Pi 4 4GB`
